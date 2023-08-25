@@ -17,19 +17,18 @@
 package guru.sfg.brewery.domain;
 
 import java.sql.Timestamp;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,9 +41,10 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @MappedSuperclass
-public class BaseEntity {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class BaseEntityLong {
 
-    public BaseEntity(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate) {
+    public BaseEntityLong(Long id, Long version, Timestamp createdDate, Timestamp lastModifiedDate) {
         this.id = id;
         this.version = version;
         this.createdDate = createdDate;
@@ -52,14 +52,9 @@ public class BaseEntity {
     }
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Type(type="org.hibernate.type.UUIDCharType")
-    @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false )
-    private UUID id;
+    @GeneratedValue( strategy = GenerationType.AUTO)
+    @EqualsAndHashCode.Include
+    private Long id;
 
     @Version
     private Long version;

@@ -6,6 +6,12 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import guru.sfg.brewery.security.RestHeaderAuthFilter;
+import guru.sfg.brewery.security.RestParamsAuthFilter;
+import guru.sfg.brewery.security.SSCPasswordEncoderFactories;
 
 @Configuration
 @EnableWebSecurity
@@ -14,6 +20,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http
+		.csrf().disable()
+		.addFilterBefore(new RestParamsAuthFilter(authenticationManager(), new AntPathRequestMatcher("/api/**")), UsernamePasswordAuthenticationFilter.class) //zelimo da nas custom filter radi pre navedenog UsernamePasswordAuthenticationFilter
+		.addFilterBefore(new RestHeaderAuthFilter(authenticationManager(), new AntPathRequestMatcher("/api/**")), RestParamsAuthFilter.class) //zelimo da nas custom filter radi pre navedenog UsernamePasswordAuthenticationFilter
 		.authorizeRequests( authorize -> {
 		   authorize.antMatchers("/", //match-uje samo pocetnu index stranu
 				                      //ostali matcher-i match-uju staticke fajlove i imamo /login resurs
@@ -55,39 +64,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
+		    .passwordEncoder(SSCPasswordEncoderFactories.createDelegatingPasswordEncoder())//navedemo instancu encoder-a u fluent api-ju
+		    
+		    //mozemo deklarisati PasswordEncoder bean i na taj nacin konfigurisati security (nije fluent!!)
 		    .withUser("spring")
-		    .password("{noop}guru") //koristimo {noop} kako bi smo naznacili springu da ne enkoduje/dekoduje
+		    .password("{bcrypt}$2a$10$jcfUSRJPkVnkGYD6ZKe2y.HTTCjgX9aNzGdE3/Uxz0zSIDkpS4BdK") //koristimo {noop} kako bi smo naznacili springu da ne enkoduje/dekoduje
 		                            //password, kasnije cemo dodavati password enkripciju
+		    
 		    .roles("ADMIN")
 		    .and()
 		    .withUser("user")
-		    .password("{noop}password")
+		    .password("{sha256}e7a601776974ee955e9714d3fa0e209fddf3f105402190b40923f622e2325755b21b39b668e591a4")//posto koristimo noop password enkoder zakucavamo golu sifru
 		    .roles("USER")
 		    .and()
 		    .withUser("scott")
-		    .password("{noop}tiger")
+		    .password("{bcrypt15}$2a$15$mEjCntIcjEPxDMYtrUVZbenPFjgUMcVmMorPk1a.idshfI7zrfclC")
 		    .roles("CUSTOMER");
 	}
-	
-//	@Override
-//	@Bean
-//	//overajuje bilo sta sto smo naveli u property fajlu
-//	//spring.security.user.name=spring
-//	//spring.security.user.password=guru
-//	protected UserDetailsService userDetailsService() {
-//		val admin = User.withDefaultPasswordEncoder() //koristi se spring password default enkoder
-//				                                      //praksa je da se navede konkretna implementacija enkodera
-//				         .username("spring")
-//				         .password("guru")
-//				         .roles("ADMIN")
-//				         .build();
-//		
-//		val user = User.withDefaultPasswordEncoder()
-//                        .username("user")
-//                        .password("password")
-//                        .roles("USER")
-//                        .build();
-//		
-//		return new InMemoryUserDetailsManager(admin, user);
-//	}
 }

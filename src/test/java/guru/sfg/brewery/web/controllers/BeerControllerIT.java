@@ -69,6 +69,5 @@ public class BeerControllerIT extends BaseIT{
 		       .andExpect(MockMvcResultMatchers.model().attributeExists("beer"));
 	}
 	
-	
 
 }
