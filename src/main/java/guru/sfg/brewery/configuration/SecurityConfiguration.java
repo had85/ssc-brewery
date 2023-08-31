@@ -1,11 +1,13 @@
 package guru.sfg.brewery.configuration;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -30,7 +32,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				                 "/login", //posto je rec o mvc aplikaciji u network tabu browsera 
 				                           //pratimo sta se blokira na index strani i to unosimo ovde
 				                           //kako bi index strana mogla da se ucitava a ostalo ide pod security
-				   				 "/webjars/**")
+				   				 "/webjars/**",
+				   				 "/h2-console/**")
 		   .permitAll() //dve zvezdice znace da matcher pokriva /webjars/prvinivo/druginivo
 		                                        //sve sleseve u nedogled nakon inicijlanog /**
 		                                        //ako stavimo samo jednu zvezdicu webjars/* to znaci sve u samo prvom
@@ -58,13 +61,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		.and()
 		.formLogin() //koristiti login formu springovu
 		.and()
-		.httpBasic(); //koristiti http basic
+		.httpBasic() //koristiti http basic
+		.and()
+		.headers().frameOptions().sameOrigin();//ako se aplikacija hostuje kao frame u okviru nekog domena
+		                                       //dozvoljavamo requestove (npr ovo je potrebno da bi enable-ovali
+		                                       //h2 konzolu da prikazuje gui
 	}
+	
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		
+		return SSCPasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+	
 	//alternativni nacin koristeci fluent api 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
-		    .passwordEncoder(SSCPasswordEncoderFactories.createDelegatingPasswordEncoder())//navedemo instancu encoder-a u fluent api-ju
+		    .passwordEncoder(passwordEncoder())//navedemo instancu encoder-a u fluent api-ju
 		    
 		    //mozemo deklarisati PasswordEncoder bean i na taj nacin konfigurisati security (nije fluent!!)
 		    .withUser("spring")

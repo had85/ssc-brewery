@@ -34,8 +34,9 @@ public class User extends BaseEntityLong {
 	
 	//cascadeType.MERGE - svako azuriranje ovog entiteta se automatski propagira na veznu tabelu
 	@ManyToMany(cascade = CascadeType.MERGE)
-	@JoinTable(name = "user_authority", joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
-	inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")}) 
+	@JoinTable(name = "user_authority", //ime tabele koje ima 2 kolone user_id koji referencira ovaj id od User entiteta
+	  joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
+	  inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")}) //authority id koji referencira ID authority entiteta
 	@Singular //dodaje se metoda add koja dodaje jedan element u authorities preko buildera
 	          //zgodno da bi izbegli da instanciramo kolekciju pa da dodajemo element pa tek onda u builder argument
 	private Set<Authority> authorities;
