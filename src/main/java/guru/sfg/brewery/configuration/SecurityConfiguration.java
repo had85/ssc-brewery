@@ -3,7 +3,6 @@ package guru.sfg.brewery.configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -74,25 +73,4 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		return SSCPasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 	
-	//alternativni nacin koristeci fluent api 
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication()
-		    .passwordEncoder(passwordEncoder())//navedemo instancu encoder-a u fluent api-ju
-		    
-		    //mozemo deklarisati PasswordEncoder bean i na taj nacin konfigurisati security (nije fluent!!)
-		    .withUser("spring")
-		    .password("{bcrypt}$2a$10$jcfUSRJPkVnkGYD6ZKe2y.HTTCjgX9aNzGdE3/Uxz0zSIDkpS4BdK") //koristimo {noop} kako bi smo naznacili springu da ne enkoduje/dekoduje
-		                            //password, kasnije cemo dodavati password enkripciju
-		    
-		    .roles("ADMIN")
-		    .and()
-		    .withUser("user")
-		    .password("{sha256}e7a601776974ee955e9714d3fa0e209fddf3f105402190b40923f622e2325755b21b39b668e591a4")//posto koristimo noop password enkoder zakucavamo golu sifru
-		    .roles("USER")
-		    .and()
-		    .withUser("scott")
-		    .password("{bcrypt15}$2a$15$mEjCntIcjEPxDMYtrUVZbenPFjgUMcVmMorPk1a.idshfI7zrfclC")
-		    .roles("CUSTOMER");
-	}
 }

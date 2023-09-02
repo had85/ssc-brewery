@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 import org.springframework.security.crypto.password.Md4PasswordEncoder;
@@ -15,7 +14,6 @@ import org.springframework.util.DigestUtils;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-@WebMvcTest
 @Slf4j
 public class PasswordEncodingTests extends BaseIT {
 	

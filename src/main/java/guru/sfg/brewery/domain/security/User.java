@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -33,7 +34,8 @@ public class User extends BaseEntityLong {
 	private String password;
 	
 	//cascadeType.MERGE - svako azuriranje ovog entiteta se automatski propagira na veznu tabelu
-	@ManyToMany(cascade = CascadeType.MERGE)
+	//fetchType da li cekamo da se metoda pozove pa da se radi upit ili po prvom cupanju da se ucita i ova kolekcija
+	@ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
 	@JoinTable(name = "user_authority", //ime tabele koje ima 2 kolone user_id koji referencira ovaj id od User entiteta
 	  joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
 	  inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")}) //authority id koji referencira ID authority entiteta
