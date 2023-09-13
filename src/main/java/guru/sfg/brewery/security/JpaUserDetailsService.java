@@ -40,9 +40,10 @@ public class JpaUserDetailsService implements UserDetailsService {
 		    		         //van sesije i desava se greska
 		    		         //resenje 1. krovna metoda mora biti @Transactional
 		    		         //resenje 2. raditi eager fetch (anotirati entitet)
-		    		         .authorities(user.getAuthorities()
+		    		         .authorities(user.getAuthorities()//izvlacimo sve granularne authoritije 
+		    		        		                           //takodje mogu da budu role
 		    		    		           .stream()
-		    		    		           .map(Authority::getRole)
+		    		    		           .map(Authority::getPermission)
 		    		    		           .map(SimpleGrantedAuthority::new)
 		    		    		           .collect(Collectors.toSet()))
 		    		         .accountExpired(!user.isAccountNonExpired())

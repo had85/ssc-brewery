@@ -22,8 +22,8 @@ import lombok.Setter;
 @Builder (toBuilder = true)
 public class Authority extends BaseEntityLong {
 	
-	private String role;
+	private String permission;
 	
 	@ManyToMany(mappedBy = "authorities") //kad hibernate parsira ovo kazemo mu gledaj polje authorities i tamo ce ti sve biti objasnjeno kako je relacija mapirana
-	private Set<User> users;
+	private Set<Role> roles;
 }

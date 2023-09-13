@@ -1,6 +1,7 @@
 package guru.sfg.brewery.domain.security;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -35,13 +36,21 @@ public class User extends BaseEntityLong {
 	
 	//cascadeType.MERGE - svako azuriranje ovog entiteta se automatski propagira na veznu tabelu
 	//fetchType da li cekamo da se metoda pozove pa da se radi upit ili po prvom cupanju da se ucita i ova kolekcija
-	@ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-	@JoinTable(name = "user_authority", //ime tabele koje ima 2 kolone user_id koji referencira ovaj id od User entiteta
+	//eager - izbegavamo n+1 problem, jer se radi join upit
+	@ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+	@JoinTable(name = "user_role", //ime tabele koje ima 2 kolone user_id koji referencira ovaj id od User entiteta
 	  joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
-	  inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")}) //authority id koji referencira ID authority entiteta
+	  inverseJoinColumns = {@JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")}) //authority id koji referencira ID authority entiteta
 	@Singular //dodaje se metoda add koja dodaje jedan element u authorities preko buildera
 	          //zgodno da bi izbegli da instanciramo kolekciju pa da dodajemo element pa tek onda u builder argument
-	private Set<Authority> authorities;
+	private Set<Role> roles;
+	
+	public Set<Authority> getAuthorities(){
+		return roles.stream()
+				.map(Role::getAuthorities)
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
+	}
 	
 	//kad pravimo objekat preko builder-a automatski ce ova polja biti setovana
 	@Builder.Default

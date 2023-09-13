@@ -1,6 +1,8 @@
 package guru.sfg.brewery.web.controllers;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -11,8 +13,9 @@ public class BeerControllerIT extends BaseIT {
 	
 	@Test
 	//koristimo kad testiramo biznis logiku, i premoscujemo security
-	@WithMockUser("gedza") //ako anotiramo sa ovom anotacijom, spring security se fakticki
+	@WithMockUser(username = "gedza", authorities = "beer.read") //ako anotiramo sa ovom anotacijom, spring security se fakticki
 	                       //overajduje, jer proglasavamo validnog korisnika unapred
+	                       //ako imamo granuliran security dodajemo ovde authoritije/role u okviru same anotacije
 	                       //mokujemo login, nema veze koji je user pravi u bazi
 	void findBeers() throws Exception {
 		
@@ -42,30 +45,18 @@ public class BeerControllerIT extends BaseIT {
 	void findBeersNoAuth() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/beers/find")
 				        .with(SecurityMockMvcRequestPostProcessors.anonymous()))
-		       .andExpect(MockMvcResultMatchers.status().isOk())
-		       .andExpect(MockMvcResultMatchers.view().name("beers/findBeers"))
-		       .andExpect(MockMvcResultMatchers.model().attributeExists("beer"));
+		       .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 	}
 	
-	@Test
+	@ParameterizedTest
+	@MethodSource("getAdminAndCustomer")
 	//koristimo kad ocemo da testiramo sam security kako radi
-	void findBeersCustomUser() throws Exception {
+	void findBeersAllRoles(String username, String password) throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/beers/find")
-				        .with(SecurityMockMvcRequestPostProcessors.httpBasic("user", "password")))
+				        .with(SecurityMockMvcRequestPostProcessors.httpBasic(username, password)))
 		       .andExpect(MockMvcResultMatchers.status().isOk())
 		       .andExpect(MockMvcResultMatchers.view().name("beers/findBeers"))
 		       .andExpect(MockMvcResultMatchers.model().attributeExists("beer"));
 	}
-	
-	@Test
-	//koristimo kad ocemo da testiramo sam security kako radi
-	void findBeersScottTiger() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.get("/beers/find")
-				        .with(SecurityMockMvcRequestPostProcessors.httpBasic("scott", "tiger")))
-		       .andExpect(MockMvcResultMatchers.status().isOk())
-		       .andExpect(MockMvcResultMatchers.view().name("beers/findBeers"))
-		       .andExpect(MockMvcResultMatchers.model().attributeExists("beer"));
-	}
-	
 
 }
