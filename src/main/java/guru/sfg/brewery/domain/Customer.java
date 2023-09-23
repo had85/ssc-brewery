@@ -17,13 +17,19 @@
 package guru.sfg.brewery.domain;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Singular;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+
+import guru.sfg.brewery.domain.security.User;
+
 import java.sql.Timestamp;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +41,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class Customer extends BaseEntity {
 
     @Builder
@@ -53,5 +60,9 @@ public class Customer extends BaseEntity {
 
     @OneToMany(mappedBy = "customer")
     private Set<BeerOrder> beerOrders;
+    
+    @Singular
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) //ako uradimo nesto na jednom customeru ocemo da se to propagira
+    private Set<User> users;
 
 }

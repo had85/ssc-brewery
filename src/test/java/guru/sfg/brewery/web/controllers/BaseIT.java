@@ -20,7 +20,7 @@ public class BaseIT {
 	WebApplicationContext webApplicationContext;
 	
 	@BeforeEach
-	void setUp() {
+	void setUpBeforeAll() {
 		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
 				    .apply(SecurityMockMvcConfigurers.springSecurity()) //enable-ujemo spring security
 					.build();

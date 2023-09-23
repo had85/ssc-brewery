@@ -30,6 +30,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,6 +43,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @MappedSuperclass
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BaseEntity {
 
     public BaseEntity(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate) {
@@ -59,6 +61,7 @@ public class BaseEntity {
     )
     @Type(type="org.hibernate.type.UUIDCharType")
     @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false )
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @Version

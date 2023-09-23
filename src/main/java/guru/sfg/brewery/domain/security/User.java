@@ -9,8 +9,15 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import guru.sfg.brewery.domain.BaseEntityLong;
+import guru.sfg.brewery.domain.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -29,10 +36,15 @@ import lombok.Singular;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder (toBuilder = true)
-public class User extends BaseEntityLong {
+public class User extends BaseEntityLong implements UserDetails, CredentialsContainer{
+
+	private static final long serialVersionUID = 1L;
 	
 	private String username;
 	private String password;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	private Customer customer;
 	
 	//cascadeType.MERGE - svako azuriranje ovog entiteta se automatski propagira na veznu tabelu
 	//fetchType da li cekamo da se metoda pozove pa da se radi upit ili po prvom cupanju da se ucita i ova kolekcija
@@ -45,10 +57,13 @@ public class User extends BaseEntityLong {
 	          //zgodno da bi izbegli da instanciramo kolekciju pa da dodajemo element pa tek onda u builder argument
 	private Set<Role> roles;
 	
-	public Set<Authority> getAuthorities(){
+	//ovo ce pozivati spring interno pa pakujemo tako da svaki authority koji je izvucen iz baze
+	//prosledimo springu koji ce preko anotacija da uporedjuje i ukrsta koji user sme sta da uradi
+	public Set<GrantedAuthority> getAuthorities(){
 		return roles.stream()
 				.map(Role::getAuthorities)
 				.flatMap(Set::stream)
+				.map(authority -> new SimpleGrantedAuthority(authority.getPermission()))
 				.collect(Collectors.toSet());
 	}
 	
@@ -64,4 +79,10 @@ public class User extends BaseEntityLong {
 	
 	@Builder.Default
 	private boolean enabled = true;
+
+	//iskopirali iz spring implementacije
+	@Override
+	public void eraseCredentials() {
+		password = null;		
+	}
 }
