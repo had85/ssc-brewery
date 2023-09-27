@@ -85,4 +85,12 @@ public class User extends BaseEntityLong implements UserDetails, CredentialsCont
 	public void eraseCredentials() {
 		password = null;		
 	}
+	
+	public boolean isAdmin() {
+		return roles.stream()
+				.map(Role::getName)
+				.filter(roleName -> "ADMIN".equalsIgnoreCase(roleName))
+				.count() > 0;
+				
+	}
 }

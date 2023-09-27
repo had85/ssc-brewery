@@ -16,17 +16,21 @@
  */
 package guru.sfg.brewery.repositories;
 
-import guru.sfg.brewery.domain.BeerOrder;
-import guru.sfg.brewery.domain.Customer;
-import guru.sfg.brewery.domain.OrderStatusEnum;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 
-import javax.persistence.LockModeType;
-import java.util.List;
-import java.util.UUID;
+import guru.sfg.brewery.domain.BeerOrder;
+import guru.sfg.brewery.domain.Customer;
+import guru.sfg.brewery.domain.OrderStatusEnum;
 
 /**
  * Created by jt on 2019-01-26.
@@ -39,4 +43,11 @@ public interface BeerOrderRepository  extends JpaRepository<BeerOrder, UUID> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     BeerOrder findOneById(UUID id);
+
+    @Query("select o from BeerOrder o where o.id=?1 and"
+    		+ "(true = :#{hasAuthority('order.read')}" //ili je korisnik admin ili je customerId isti kao principal
+    		+ " or o.customer.id = ?#{principal?.customer?.id})")
+    Optional<BeerOrder> findByIdSecure(UUID orderId);//sufix secure da bi naznacili springu
+                                        //da koristimo metode iz paketa
+                                        //spring-security-data
 }

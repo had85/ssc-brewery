@@ -17,6 +17,18 @@
 
 package guru.sfg.brewery.services;
 
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import guru.sfg.brewery.domain.BeerOrder;
 import guru.sfg.brewery.domain.Customer;
 import guru.sfg.brewery.domain.OrderStatusEnum;
@@ -27,15 +39,6 @@ import guru.sfg.brewery.web.model.BeerOrderDto;
 import guru.sfg.brewery.web.model.BeerOrderPagedList;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -93,6 +96,14 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     public BeerOrderDto getOrderById(UUID customerId, UUID orderId) {
         return beerOrderMapper.beerOrderToDto(getOrder(customerId, orderId));
     }
+    
+
+	@Override
+	public BeerOrderDto getOrderById(UUID orderId) {
+		return beerOrderRepository.findByIdSecure(orderId)//sufix secure da bi naznacili springu
+				.map(beerOrderMapper::beerOrderToDto)     //da koristimo metode iz paketa
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));//spring-security-data
+	}
 
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
@@ -120,4 +131,19 @@ public class BeerOrderServiceImpl implements BeerOrderService {
         }
         throw new RuntimeException("Customer Not Found");
     }
+
+	@Override
+	public BeerOrderPagedList listOrders(PageRequest pageable) {
+        Page<BeerOrder> beerOrderPage =
+                beerOrderRepository.findAll(pageable);
+
+        return new BeerOrderPagedList(beerOrderPage
+                .stream()
+                .map(beerOrderMapper::beerOrderToDto)
+                .collect(Collectors.toList()), PageRequest.of(
+                beerOrderPage.getPageable().getPageNumber(),
+                beerOrderPage.getPageable().getPageSize()),
+                beerOrderPage.getTotalElements());
+	}
+
 }
