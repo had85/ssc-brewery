@@ -22,6 +22,14 @@
                 th:replace="~{fragments/inputField :: input ('Qty to Brew', 'quantityToBrew', 'number')}" />
         <input
                 th:replace="~{fragments/inputField :: input ('Price', 'price', 'monetory')}" />
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value = "${_csrf.token}" > <!-- spring security
+                                                                                           varijable koje se ucitavaju u template tako imamo uvek validan token jer spring mvc vraca popunjen
+                                                                                           template i cupa validne tokene 
+                                                                                           takodje moramo da koristimo th: - ispred atributa ako zelimo da thymeleaf injectuje varijable
+                                                                                           u suprotnom ce to biti string literali dakle th:value umesto value, th:name umesto name
+                                                                                           csrf toket ce uvek biti dodeljen prilikom kreirane sesije i bice isti za tu sesiju svuda
+                                                                                           posto csrf napadac ima html formu na svom sajtu nema pristup ovom tokenu odavde iz htmla
+                                                                                       -->
     </div>
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">

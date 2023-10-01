@@ -31,7 +31,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http
-		.csrf().disable()
+//		.csrf().disable() //iskljucuje springov synchronizer token
+//		                  //kad se korisinik uloguje dobija synchronizer token koji salje kroz sve zahteve
+//		                  //svoje sesije ako nema synchronizer tokena odbija se zahtev
+		.csrf().ignoringAntMatchers("/h2-console/**", "/api/**") //disable-ovan csrf samo za h2 konzolu i api resurse
+		                                                         //na spring mvc funkcionise
+		.and()
 		.addFilterBefore(new RestParamsAuthFilter(authenticationManager(), new AntPathRequestMatcher("/api/**")), UsernamePasswordAuthenticationFilter.class) //zelimo da nas custom filter radi pre navedenog UsernamePasswordAuthenticationFilter
 		.addFilterBefore(new RestHeaderAuthFilter(authenticationManager(), new AntPathRequestMatcher("/api/**")), RestParamsAuthFilter.class) //zelimo da nas custom filter radi pre navedenog UsernamePasswordAuthenticationFilter
 		.authorizeRequests( authorize -> {

@@ -52,6 +52,7 @@ public class CustomerControllerIT extends BaseIT {
 		})
 		void getBreweriesBasicAuthWithValidUsers(String username, String password) throws Exception {
 			mockMvc.perform(MockMvcRequestBuilders.post("/customers/new")
+					.with(SecurityMockMvcRequestPostProcessors.csrf()) //ukljucujemo csrf u test
 					.param("customerName", "Foo Customer")
 					.with(SecurityMockMvcRequestPostProcessors.httpBasic(username, password)))
 					.andExpect(MockMvcResultMatchers.status().is3xxRedirection()); //mvc koji vraca redirect
