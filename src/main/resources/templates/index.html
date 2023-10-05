@@ -17,14 +17,40 @@
   -->
 
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+<html lang="en" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout (~{::body},'home')}">
 <head>
     <meta charset="UTF-8"/>
     <title>SFG Brewery</title>
 </head>
 <body>
 <h2 th:text="#{welcomemsg}">SFG Brewery Monolith</h2>
-
+<div sec:authorize="!isAuthenticated()" class="row">
+	<div class="col-md-12"> <!-- css bootstrap klasa -->
+		<form th:action="@{/login}" method="post"> <!-- /@login url spring security default -->
+		    <label for="username">Username:</label>
+			<input type="text" id="username" name="username" autofocus="true" autocomplete="off">
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" autofocus="true" autocomplete="off">
+			<button>Submit</button>
+		</form>
+		<div th:if="${param.error}" class="alert alert-danger"> <!-- bootstrap prikazuje alert -->
+			Invalid username/password
+		</div>
+		<div th:if="${param.logout}" class="alert alert-success">
+			You successfully logged out
+		</div>
+	</div>
+</div>
+<div sec:authorize="isAuthenticated()" class="row"> <!-- ako je korisnik autentifikovan prikazivace se ovaj div
+                                                         i svi child elementi -->
+	<div class="col-md-12"> <!-- css bootstrap klasa -->
+	    <p th:text="'Welcome ' + ${#authentication?.principal?.username} "></p>
+		<a th:href="@{/logout}">Logout</a>
+	</div>
+</div>
 <div class="row">
     <div class="col-md-12">
         <img class="img-responsive" src="../static/resources/images/brewery.png" th:src="@{/resources/images/brewery.png}"/>

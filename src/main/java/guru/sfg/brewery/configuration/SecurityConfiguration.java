@@ -53,8 +53,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		.authorizeRequests() //autorizuje requestove
 		.anyRequest().authenticated() //svaki request mora biti autentifikovan
 		.and()
-		.formLogin() //koristiti login formu springovu
-		.and()
+		.formLogin(loginConfigurer -> {//cim krenemo da konfigurisemo formLogin
+			                           //gubimo spring form autoconfig i moramo sve da pokrijemo
+			loginConfigurer.loginProcessingUrl("/login") //gde ce forma slati podatke
+			               .loginPage("/") //login page ce biti na index pageu
+			               //skroz je ok da login forma bude na /login url-u kao posebna stranica
+			               //pa kad se korisnik uspesno uloguje da se ide na index ili ko zna gde
+			               .permitAll()
+			               .successForwardUrl("/") //u slucaju da login uspe ide se na index page
+			               .defaultSuccessUrl("/")
+			               .failureUrl("/?error");//ako je greska pri loginu saljemo parametar error
+		})
+		.logout(logoutConfigurer -> {//zelimo da se izlogujemo klikom na link zato menjamo nacin
+			                         //sa uopbicajenog post-a na GET metodu
+			                         //ovaj matcher znaci da prihvatamo zahtev kao validan
+			logoutConfigurer.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+			.logoutSuccessUrl("/?logout") //idemo na index stranicu kad smo se uspesno izlogovali	
+			.permitAll();
+		})	
 		.httpBasic() //koristiti http basic
 		.and()
 		.headers().frameOptions().sameOrigin();//ako se aplikacija hostuje kao frame u okviru nekog domena
