@@ -1,20 +1,28 @@
 package guru.sfg.brewery.configuration;
 
+
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import guru.sfg.brewery.security.RestHeaderAuthFilter;
 import guru.sfg.brewery.security.RestParamsAuthFilter;
 import guru.sfg.brewery.security.SSCPasswordEncoderFactories;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true) //enable-ujemo anotacije koje
@@ -22,6 +30,10 @@ import guru.sfg.brewery.security.SSCPasswordEncoderFactories;
                                                                           //securedEnabled - starije anotacije
                                                                           //preAuthorize - novije koje koriste SpEl
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+	
+	private final UserDetailsService userDetailsService;
+	
+	private final DataSource dataSource;
 	
 	public SecurityEvaluationContextExtension contextExtension() {
 		return new SecurityEvaluationContextExtension(); //kako bi omogucili spring security anotacije da rade
@@ -73,15 +85,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		})	
 		.httpBasic() //koristiti http basic
 		.and()
-		.headers().frameOptions().sameOrigin();//ako se aplikacija hostuje kao frame u okviru nekog domena
+		.headers().frameOptions().sameOrigin()//ako se aplikacija hostuje kao frame u okviru nekog domena
 		                                       //dozvoljavamo requestove (npr ovo je potrebno da bi enable-ovali
 		                                       //h2 konzolu da prikazuje gui
+		.and()
+//		.rememberMe().key("privatni_kljuc_za_generisanje_hash-a_cookie-ja")
+//		             .userDetailsService(userDetailsService);//simple hash based token config
+		.rememberMe()
+		.tokenRepository(persistentTokenRepository())
+		.userDetailsService(userDetailsService); //persistent hash config
 	}
 	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		
 		return SSCPasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+	
+	@Bean //potrebno za config persistent tokena
+	public PersistentTokenRepository persistentTokenRepository() {
+		JdbcTokenRepositoryImpl jdbcRepo = new JdbcTokenRepositoryImpl(); 
+		jdbcRepo.setDataSource(dataSource);
+		return jdbcRepo;
 	}
 	
 }

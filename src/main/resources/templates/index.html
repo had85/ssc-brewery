@@ -35,6 +35,12 @@
 			<label for="password">Password:</label>
 			<input type="password" id="password" name="password" autofocus="true" autocomplete="off">
 			<button>Submit</button>
+			<label for="remember-me">Remember me:</label>
+			<input type="checkbox" id="remember-me" name="remember-me"> <!-- da bi spring kontao remember me
+			                                                                 out of the box moramo da nazaovemo
+			                                                                 id i name "remember-me"
+			                                                                 moze se dodatno konfigurisati ali
+			                                                                 ovo je default -->
 		</form>
 		<div th:if="${param.error}" class="alert alert-danger"> <!-- bootstrap prikazuje alert -->
 			Invalid username/password
