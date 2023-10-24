@@ -42,8 +42,13 @@
 			                                                                 moze se dodatno konfigurisati ali
 			                                                                 ovo je default -->
 		</form>
-		<div th:if="${param.error}" class="alert alert-danger"> <!-- bootstrap prikazuje alert -->
+		<!-- <div th:if="${param.error}" class="alert alert-danger">  bootstrap prikazuje alert 
 			Invalid username/password
+		</div>-->
+	    <div th:if="${param.error}" th:text="${session['SPRING_SECURITY_LAST_EXCEPTION']?.message}" class="alert alert-danger"> <!-- bootstrap prikazuje alert -->
+			<!-- ${session['SPRING_SECURITY_LAST_EXCEPTION']?.message} predstavlja kljuc gde je spring gurnuo
+			                                                           poruku kroz model, cupamo spring poruku
+			                                                           preko kljuca i prikazujemo useru -->
 		</div>
 		<div th:if="${param.logout}" class="alert alert-success">
 			You successfully logged out
@@ -57,6 +62,7 @@
 		<a th:href="@{/logout}">Logout</a>
 	</div>
 </div>
+
 <div class="row">
     <div class="col-md-12">
         <img class="img-responsive" src="../static/resources/images/brewery.png" th:src="@{/resources/images/brewery.png}"/>

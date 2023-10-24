@@ -3,8 +3,11 @@ package guru.sfg.brewery.configuration;
 
 import javax.sql.DataSource;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,6 +37,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private final UserDetailsService userDetailsService;
 	
 	private final DataSource dataSource;
+	
+	//dodajemo ovaj bean ako zelimo difolt spring security eventove
+	@Bean
+	public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+	}
 	
 	public SecurityEvaluationContextExtension contextExtension() {
 		return new SecurityEvaluationContextExtension(); //kako bi omogucili spring security anotacije da rade
