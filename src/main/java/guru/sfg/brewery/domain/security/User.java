@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -79,6 +80,18 @@ public class User extends BaseEntityLong implements UserDetails, CredentialsCont
 	
 	@Builder.Default
 	private boolean enabled = true;
+	
+	@Builder.Default
+	private boolean using2FA = false; //spring security na osnovu ovoga odlucuje dal rutira korisnika 
+	                                  //na 2FA Verifikaciju ili ne
+	                                  //podesava se na registraciji tj unosi se
+	
+	private String secret2FA;//unosi se na registraciji
+	
+	@Builder.Default
+	@Transient
+	private boolean totpRequired = true; //da li je korisnik uneo totp, ako jeste ovo se svicuje u false
+	                                    //spring security filter ce ovo cackati nece se perzistirati
 
 	//iskopirali iz spring implementacije
 	@Override
