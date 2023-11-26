@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Factor Verification</title>
+    <!-- Ova forma se prikazuje korisniku koji se uspesno ulogovao ali ima aktiviranu 2fa i mora dodatno da unese kod
+         koji je generisan na Google Auth aplikaciji, ovo radimo na svaki login za one korisnike koji imaju 2fa aktiviran
+         kad korisnik uspesno verifikuje kod, menjamo mu specijalan fleg kako bi ga google auth filteri ignorisali
+         za svaki sledeci request u toj sesiji, ne cuvamo fleg u bazi -->
+
+</head>
+
+<body>
+    <h2>Enter your Google Auth code</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <form th:action="@{/user/verify2fa}" class="form-horizontal" id="verificationCodeForm" method="post">
+                <!--forma za unos koda koji generise Google Auth aplikacija, ide na spring controler koji tamo gleda da li je sve validno-->
+                <label for="verificationCode" class="control-label">Enter Code:</label>
+                <input type="number" class="form-control" id="verificationCode" name="verificationCode" autofocus="true"
+                    autocomplete="off">
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <!--csrf zastita nema veze sa qr registracijom biznis wajz-->
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button class="btn btn-default" type="submit">Verify Code</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

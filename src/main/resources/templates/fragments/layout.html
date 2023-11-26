@@ -63,6 +63,12 @@
                     <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>
                     <span>Breweries</span>
                 </li>
+                <li th:replace="::menuItem ('/user/register2fa','user','register','th-list','Enable 2 FA')">
+                    <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                    <span>Breweries</span>
+                </li> <!--dodajemo meni opciju da enable-ujemo 2FA za postojece korisnike,
+                          generise se QR koji skeniramo, i kad unesemo totp aktivira se flow sa Google Authom 
+                          buducem loginu -->
 
             </ul>
         </div>

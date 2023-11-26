@@ -1,12 +1,15 @@
 package guru.sfg.brewery.configuration;
 
 
+import java.util.concurrent.TimeUnit;
+
 import javax.sql.DataSource;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,12 +21,20 @@ import org.springframework.security.data.repository.query.SecurityEvaluationCont
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorConfig;
+import com.warrenstrange.googleauth.ICredentialRepository;
 
 import guru.sfg.brewery.security.RestHeaderAuthFilter;
 import guru.sfg.brewery.security.RestParamsAuthFilter;
 import guru.sfg.brewery.security.SSCPasswordEncoderFactories;
+import guru.sfg.brewery.security.google.Google2FAAuthFilter;
+import guru.sfg.brewery.security.google.Google2FAFailureHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 @Configuration
@@ -52,6 +63,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http
+		.addFilterBefore(google2faAuthFilter(), SessionManagementFilter.class) //pre nego sto dodje do dela gde se podrazumeva
+		                                                                     //ulogovan korisnik da prolazi kroz nas
+		                                                                     //google auth filter
 //		.csrf().disable() //iskljucuje springov synchronizer token
 //		                  //kad se korisinik uloguje dobija synchronizer token koji salje kroz sve zahteve
 //		                  //svoje sesije ako nema synchronizer tokena odbija se zahtev
@@ -116,6 +130,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		JdbcTokenRepositoryImpl jdbcRepo = new JdbcTokenRepositoryImpl(); 
 		jdbcRepo.setDataSource(dataSource);
 		return jdbcRepo;
+	}
+	
+	@Bean //prosledjujemo repository koji smo sami implementirali gde dohvatamo usere iz nase baze
+	      //@GoogleCredentialsRepository
+	public GoogleAuthenticator googleAuthenticator(ICredentialRepository credentialRepository) {
+		val config = new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder()
+		             .setTimeStepSizeInMillis(TimeUnit.SECONDS.toMillis(30)) //mora 30 inace baguje
+		                                                                     //ne radi lepo
+		             .setWindowSize(10)
+		             .setNumberOfScratchCodes(0)
+		             .build(); //podesavamo zbog moguce razlike u vremenu na google auth aplikaciji i 
+		                       //serverima gde ce se validirati kod, da se uzme u obzir mala tolerancija
+		val googleAuthenticator = new GoogleAuthenticator(config);
+		googleAuthenticator.setCredentialRepository(credentialRepository);
+		return googleAuthenticator;
+	}
+	
+	@Bean
+	public Google2FAAuthFilter google2faAuthFilter() {
+		return new Google2FAAuthFilter(new AuthenticationTrustResolverImpl(), new Google2FAFailureHandler());
 	}
 	
 }
